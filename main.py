@@ -13,7 +13,7 @@ from utils.stloss import SoftTarget
 
 def build_diagnosisbot(num_classes, detector_weight_path):
     model = create_model(num_classes=num_classes)
-    assert os.path.exists(detector_weight_path), f"File: '{detector_weight_path}' does not exist."
+    assert os.path.exists(detector_weight_path), "file: '{}' dose not exist.".format(detector_weight_path)
     model.load_state_dict(torch.load(detector_weight_path, map_location=torch.device('cpu')), strict=True)
     for k, v in model.named_parameters():
         v.requires_grad = False
@@ -22,7 +22,7 @@ def build_diagnosisbot(num_classes, detector_weight_path):
 
 def build_tmodel(config, device):
     tmodel, _ = caption.build_model(config)
-    print("Loading teacher model checkpoint...")
+    print("Loading teacher medel Checkpoint...")
     tcheckpoint = torch.load(config.t_model_weight_path, map_location='cpu')
     tmodel.load_state_dict(tcheckpoint['model'])
     tmodel.to(device)
@@ -49,34 +49,31 @@ def main(config):
     criterionKD = SoftTarget(4.0)
     model.to(device)
 
-    n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    n_parameters = sum(p.numel()
+                       for p in model.parameters() if p.requires_grad)
     print(f"Number of params: {n_parameters}")
 
     param_dicts = [
-        {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
+        {"params": [p for n, p in model.named_parameters(
+        ) if "backbone" not in n and p.requires_grad]},
         {
             "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
             "lr": config.lr_backbone,
         },
     ]
-    optimizer = torch.optim.AdamW(param_dicts, lr=config.lr, weight_decay=config.weight_decay)
+    optimizer = torch.optim.AdamW(
+        param_dicts, lr=config.lr, weight_decay=config.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, config.lr_drop)
 
-    dataset_train = xray.build_dataset(
-        config, mode='training', anno_path=config.anno_path, data_dir=config.data_dir,
-        dataset_name=config.dataset_name, image_size=config.image_size,
-        theta=config.theta, gamma=config.gamma, beta=config.beta
-    )
-    dataset_val = xray.build_dataset(
-        config, mode='validation', anno_path=config.anno_path, data_dir=config.data_dir,
-        dataset_name=config.dataset_name, image_size=config.image_size,
-        theta=config.theta, gamma=config.gamma, beta=config.beta
-    )
-    dataset_test = xray.build_dataset(
-        config, mode='test', anno_path=config.anno_path, data_dir=config.data_dir,
-        dataset_name=config.dataset_name, image_size=config.image_size,
-        theta=config.theta, gamma=config.gamma, beta=config.beta
-    )
+    dataset_train = xray.build_dataset(config, mode='training', anno_path=config.anno_path, data_dir=config.data_dir,
+                                       dataset_name=config.dataset_name, image_size=config.image_size,
+                                       theta=config.theta, gamma=config.gamma, beta=config.beta)
+    dataset_val = xray.build_dataset(config, mode='validation', anno_path=config.anno_path, data_dir=config.data_dir,
+                                     dataset_name=config.dataset_name, image_size=config.image_size,
+                                     theta=config.theta, gamma=config.gamma, beta=config.beta)
+    dataset_test = xray.build_dataset(config, mode='test', anno_path=config.anno_path, data_dir=config.data_dir,
+                                      dataset_name=config.dataset_name, image_size=config.image_size,
+                                      theta=config.theta, gamma=config.gamma, beta=config.beta)
     print(f"Train: {len(dataset_train)}")
     print(f"Valid: {len(dataset_val)}")
     print(f"Test: {len(dataset_test)}")
@@ -92,13 +89,13 @@ def main(config):
     data_loader_train = DataLoader(
         dataset_train, batch_sampler=batch_sampler_train, num_workers=config.num_workers,
         collate_fn=dataset_train.collate_fn)
-    data_loader_val = DataLoader(
-        dataset_val, config.batch_size, sampler=sampler_val, drop_last=False,
-        collate_fn=dataset_val.collate_fn)
-    data_loader_test = DataLoader(
-        dataset_test, config.batch_size, sampler=sampler_test, drop_last=False,
-        collate_fn=dataset_test.collate_fn)
+    data_loader_val = DataLoader(dataset_val, config.batch_size,
+                                 sampler=sampler_val, drop_last=False,
+                                 collate_fn=dataset_val.collate_fn)
 
+    data_loader_test = DataLoader(dataset_test, config.batch_size,
+                                  sampler=sampler_test, drop_last=False,
+                                  collate_fn=dataset_test.collate_fn)
     if config.mode == "train":
         tmodel = build_tmodel(config, device)
         print("Start Training..")
@@ -115,14 +112,14 @@ def main(config):
                 'optimizer': optimizer.state_dict(),
                 'lr_scheduler': lr_scheduler.state_dict(),
                 'epoch': epoch,
-            }, f"{config.dataset_name}_weight_epoch{epoch}_.pth")
+            }, config.dataset_name + "_weight_epoch" + str(epoch) + "_.pth")
 
             validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
                                        thresholds=thresholds, tokenizer=dataset_val.tokenizer)
-            print(f"Validate Result: {validate_result}")
+            print(f"validate_result: {validate_result}")
             test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
                                    thresholds=thresholds, tokenizer=dataset_test.tokenizer)
-            print(f"Test Result: {test_result}")
+            print(f"test_result: {test_result}")
     if config.mode == "test":
         if os.path.exists(config.test_path):
             weights_dict = torch.load(config.test_path, map_location='cpu')['model']
@@ -131,7 +128,7 @@ def main(config):
         print("Start Testing..")
         test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
                                thresholds=thresholds, tokenizer=dataset_test.tokenizer)
-        print(f"Test Result: {test_result}")
+        print(f"test_result: {test_result}")
 
 
 if __name__ == "__main__":
@@ -152,7 +149,7 @@ if __name__ == "__main__":
     parser.add_argument('--device', default='cuda:0', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--num_workers', type=int, default=8)
+    parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--clip_max_norm', type=float, default=0.1)
 
     # Transformer
@@ -173,10 +170,10 @@ if __name__ == "__main__":
 
     # diagnosisbot
     parser.add_argument('--num_classes', type=int, default=14)
-    parser.add_argument('--thresholds_path', type=str, default="datasets/thresholds.pkl")
-    parser.add_argument('--detector_weight_path', type=str, default="weights/diagnosisbot.pth")
-    parser.add_argument('--t_model_weight_path', type=str, default="weights/teacher_model.pth")
-    parser.add_argument('--knowledge_prompt_path', type=str, default="knowledge/knowledge_prompt.pkl")
+    parser.add_argument('--thresholds_path', type=str, default="./datasets/thresholds.pkl")
+    parser.add_argument('--detector_weight_path', type=str, default="./weight_path/diagnosisbot.pth")
+    parser.add_argument('--t_model_weight_path', type=str, default="./weight_path/mimic_t_model.pth")
+    parser.add_argument('--knowledge_prompt_path', type=str, default="./knowledge_path/knowledge_prompt_mimic.pkl")
 
     # ADA
     parser.add_argument('--theta', type=float, default=0.4)
@@ -188,12 +185,12 @@ if __name__ == "__main__":
 
     # Dataset
     parser.add_argument('--image_size', type=int, default=300)
-    parser.add_argument('--dataset_name', type=str, default='custom_dataset')
-    parser.add_argument('--anno_path', type=str, default='datasets/annotation.json')
-    parser.add_argument('--data_dir', type=str, default='datasets/images')
+    parser.add_argument('--dataset_name', type=str, default='mimic_cxr')
+    parser.add_argument('--anno_path', type=str, default='../dataset/mimic_cxr/annotation.json')
+    parser.add_argument('--data_dir', type=str, default='../dataset/mimic_cxr/images300')
     parser.add_argument('--limit', type=int, default=-1)
 
-    # Mode
+    # mode
     parser.add_argument('--mode', type=str, default="train")
     parser.add_argument('--test_path', type=str, default="")
 
