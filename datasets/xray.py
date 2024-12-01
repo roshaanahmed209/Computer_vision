@@ -24,7 +24,7 @@ def get_transform(MAX_DIM):
         if image.mode != 'RGB':
             image = image.convert("RGB")
 
-        shape = np.array(image.size, dtype=np.float)
+        shape = np.array(image.size, dtype=np.float64)
         long_dim = max(shape)
         scale = MAX_DIM / long_dim
 
