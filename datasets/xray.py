@@ -28,7 +28,7 @@ def get_transform(MAX_DIM):
         long_dim = max(shape)
         scale = MAX_DIM / long_dim
 
-        new_shape = (shape * scale).astype(int)
+        new_shape = tuple((shape * scale).astype(int))
         image = image.resize(new_shape)
 
         return image
