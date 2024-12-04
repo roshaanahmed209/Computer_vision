@@ -149,7 +149,7 @@ if __name__ == "__main__":
     parser.add_argument('--device', default='cuda:0', help='device id (i.e. 0 or 0,1 or cpu)')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--num_workers', type=int, default=8)
+    parser.add_argument('--num_workers', type=int, default=84)
     parser.add_argument('--clip_max_norm', type=float, default=0.1)
 
     # Transformer
