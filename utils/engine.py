@@ -132,7 +132,7 @@ def evaluate(model, class_model, criterion, data_loader, device, config, thresho
         pred_result = [tokenizer.decode(item) for item in preds]
         # print(pred_result)
         if mode =="infer":
-           return pred_result     
+           return pred_result[0]     
         val_met = compute_scores({i: [gt] for i, gt in enumerate(ground_truth)},
                                  {i: [re] for i, re in enumerate(pred_result)})
         return val_met

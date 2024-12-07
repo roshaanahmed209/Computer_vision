@@ -119,13 +119,15 @@ def main(config):
             lr_scheduler.step()
             print(f"Training Loss: {epoch_loss}")
 
-            torch.save({
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'lr_scheduler': lr_scheduler.state_dict(),
-                'epoch': epoch,
-            }, config.dataset_name + "_weight_epoch" + str(epoch) + "_.pth")
-            
+
+            if epoch+1 % 20 == 0 or epoch == 0:
+                torch.save({
+                    'model': model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'lr_scheduler': lr_scheduler.state_dict(),
+                    'epoch': epoch,
+                }, config.dataset_name + "_weight_epoch" + str(epoch) + "_.pth")
+                
             
             if epoch+1==50:
                 validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
