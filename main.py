@@ -96,6 +96,18 @@ def main(config):
     data_loader_test = DataLoader(dataset_test, config.batch_size,
                                   sampler=sampler_test, drop_last=False,
                                   collate_fn=dataset_test.collate_fn)
+    
+    if config.mode == "infer":
+        if os.path.exists(config.infer_path):
+            weights_dict = torch.load(config.infer_path, map_location='cpu')['model']
+            model.load_state_dict(weights_dict, strict=False)
+
+        print("Report generation: \n")
+        test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
+                               thresholds=thresholds, tokenizer=dataset_test.tokenizer, mode=config.mode)
+        print(f"Report: \n {test_result}")
+
+    
     if config.mode == "train":
         tmodel = build_tmodel(config, device)
         print("Start Training..")
@@ -130,6 +142,7 @@ def main(config):
                                thresholds=thresholds, tokenizer=dataset_test.tokenizer)
         print(f"test_result: {test_result}")
 
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -193,6 +206,9 @@ if __name__ == "__main__":
     # mode
     parser.add_argument('--mode', type=str, default="train")
     parser.add_argument('--test_path', type=str, default="")
+
+    parser.add_argument('--infer_path', type=str, default="")
+
 
     config = parser.parse_args()
     main(config)

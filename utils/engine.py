@@ -81,7 +81,7 @@ def compute_scores(gts, res):
 
 
 @torch.no_grad()
-def evaluate(model, class_model, criterion, data_loader, device, config, thresholds, tokenizer):
+def evaluate(model, class_model, criterion, data_loader, device, config, thresholds, tokenizer, mode=None):
     model.eval()
     criterion.eval()
     class_model.eval()
@@ -130,6 +130,9 @@ def evaluate(model, class_model, criterion, data_loader, device, config, thresho
             reports.append([item for item in reports_sentence if item not in [config.start_token, config.end_token, 0]])
         ground_truth = [tokenizer.decode(item) for item in reports]
         pred_result = [tokenizer.decode(item) for item in preds]
+        # print(pred_result)
+        if mode =="infer":
+           return pred_result     
         val_met = compute_scores({i: [gt] for i, gt in enumerate(ground_truth)},
                                  {i: [re] for i, re in enumerate(pred_result)})
         return val_met
