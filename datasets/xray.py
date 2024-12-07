@@ -80,7 +80,8 @@ class XrayDataset(Dataset):
         if mode == 'training':
             self.annot = self.annot[:]
         else:
-            self.annot = self.annot[:]
+            
+            self.annot = self.annot[:limit] 
         if dataset_name == "mimic_cxr":
             threshold = 10
         elif dataset_name == "iu_xray":

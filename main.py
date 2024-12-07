@@ -211,6 +211,7 @@ if __name__ == "__main__":
     parser.add_argument('--test_path', type=str, default="")
 
     parser.add_argument('--infer_path', type=str, default="")
+    # parser.add_argument('--infer_limit', type=int, default=1)
 
 
     config = parser.parse_args()
