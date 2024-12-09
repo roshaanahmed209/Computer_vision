@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
+import argparse
 import torch
 from torch.utils.data import DataLoader
 import pickle
@@ -31,22 +32,73 @@ def build_diagnosisbot(num_classes, detector_weight_path):
 
 @app.post("/evaluate")
 async def evaluate_xray(data_dir: str = Form(...), anno_path: str = Form(...)):
-    # Configuration
-    class Config:
-        device = "cpu"
-        thresholds_path = "/kaggle/working/Computer_vision/datasets/thresholds.pkl"
-        detector_weight_path = "/kaggle/input/iumodel-dataset/IUmodel/diagnosisbot.pth"
-        t_model_weight_path = "./weight_path/mimic_t_model.pth"
-        image_size = 300
-        dataset_name = 'iu_xray'
-        theta = 0.4
-        gamma = 0.4
-        beta = 1.0
-        mode = "infer"
-        infer_path = "/kaggle/working/iu_xray_weight_epoch0_.pth"
-        batch_size = 8
 
-    config = Config()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--lr_drop', type=int, default=20)
+    parser.add_argument('--start_epoch', type=int, default=0)
+    parser.add_argument('--weight_decay', type=float, default=1e-4)
+
+    # Backbone
+    parser.add_argument('--backbone', type=str, default='resnet101')
+    parser.add_argument('--position_embedding', type=str, default='sine')
+    parser.add_argument('--dilation', type=bool, default=True)
+    # Basic
+    parser.add_argument('--lr_backbone', type=float, default=1e-5)
+    parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--device', default='cpu', help='device id (i.e. 0 or 0,1 or cpu)')
+    parser.add_argument('--seed', type=int, default=42)
+    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--num_workers', type=int, default=1)
+    parser.add_argument('--clip_max_norm', type=float, default=0.1)
+
+    # Transformer
+    parser.add_argument('--hidden_dim', type=int, default=256)
+    parser.add_argument('--pad_token_id', type=int, default=0)
+    parser.add_argument('--max_position_embeddings', type=int, default=128)
+    parser.add_argument('--layer_norm_eps', type=float, default=1e-12)
+    parser.add_argument('--dropout', type=float, default=0.1)
+    parser.add_argument('--vocab_size', type=int, default=760)
+    parser.add_argument('--start_token', type=int, default=1)
+    parser.add_argument('--end_token', type=int, default=2)
+
+    parser.add_argument('--enc_layers', type=int, default=6)
+    parser.add_argument('--dec_layers', type=int, default=6)
+    parser.add_argument('--dim_feedforward', type=int, default=2048)
+    parser.add_argument('--nheads', type=int, default=8)
+    parser.add_argument('--pre_norm', type=int, default=True)
+
+    # diagnosisbot
+    parser.add_argument('--num_classes', type=int, default=14)
+    parser.add_argument('--thresholds_path', type=str, default="datasets/thresholds.pkl")
+    parser.add_argument('--detector_weight_path', type=str, default="H:/CV_project/IUmodel/diagnosisbot.pth")
+    parser.add_argument('--t_model_weight_path', type=str, default="./weight_path/mimic_t_model.pth")
+    parser.add_argument('--knowledge_prompt_path', type=str, default="H:/CV_project/IUmodel/knowledge_prompt_iu.pkl")
+
+    # ADA
+    parser.add_argument('--theta', type=float, default=0.4)
+    parser.add_argument('--gamma', type=float, default=0.4)
+    parser.add_argument('--beta', type=float, default=1.0)
+
+    # Delta
+    parser.add_argument('--delta', type=float, default=0.01)
+
+    # Dataset
+    parser.add_argument('--image_size', type=int, default=300)
+    parser.add_argument('--dataset_name', type=str, default='iu_xray')
+  
+    parser.add_argument('--limit', type=int, default=1)
+
+    # mode
+    parser.add_argument('--mode', type=str, default="infer")
+    parser.add_argument('--test_path', type=str, default="H:/CV_project/IUmodel/iu_xray_weight_epoch0_.pth")
+
+    parser.add_argument('--infer_path', type=str, default="H:/CV_project/IUmodel/iu_xray_weight_epoch0_.pth")
+    # parser.add_argument('--infer_limit', type=int, default=1)
+
+
+    config = parser.parse_args()
+
 
     # Initialize models
     device = torch.device(config.device)
@@ -84,5 +136,5 @@ async def evaluate_xray(data_dir: str = Form(...), anno_path: str = Form(...)):
         return JSONResponse(content={"report": test_result})
 
 # Run the backend
-if _name_ == "_main_":
+if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
