@@ -4,7 +4,7 @@ import re
 from collections import Counter
 import pickle
 
-with open('datasets/strip_list.pkl', 'rb') as file:
+with open('/kaggle/working/Computer_vision/datasets/strip_list.pkl', 'rb') as file:
     strip = pickle.load(file)
 
 

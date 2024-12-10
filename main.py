@@ -131,6 +131,7 @@ def main(config):
             
             if epoch==0:
                 print("resuming from epoch 50... \n")
+
                 validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
                                         thresholds=thresholds, tokenizer=dataset_val.tokenizer)
                 print(f"validate_result: {validate_result}")
