@@ -137,7 +137,7 @@ def main(config):
                 test_result_0 = evaluate(model, detector, criterion, data_loader_test, device, config,
                                     thresholds=thresholds, tokenizer=dataset_test.tokenizer)
 
-            if epoch==99:
+            if epoch==49:
                 print(f"validate_result: {validate_result_0}")
                 print(f"test_result: {test_result_0}")
 
