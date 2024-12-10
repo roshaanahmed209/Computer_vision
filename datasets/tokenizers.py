@@ -13,7 +13,7 @@ class Tokenizer(object):
         self.ann_path = ann_path
         self.threshold = threshold
         self.dataset_name = dataset_name
-        self.vocabulary_path = os.path.join("datasets", self.dataset_name + "_vocabulary.pkl")
+        self.vocabulary_path = os.path.join("/kaggle/working/Computer_vision/datasets/", self.dataset_name + "_vocabulary.pkl")
         self.max_length = max_length
 
         if self.dataset_name == 'iu_xray':
