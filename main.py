@@ -129,6 +129,15 @@ def main(config):
                 }, config.dataset_name + "_weight_epoch" + str(epoch) + "_.pth")
                 
             
+            if epoch==0:
+                print("resuming from epoch 50... \n")
+                validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
+                                        thresholds=thresholds, tokenizer=dataset_val.tokenizer)
+                print(f"validate_result: {validate_result}")
+                test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
+                                    thresholds=thresholds, tokenizer=dataset_test.tokenizer)
+                print(f"test_result: {test_result}")
+
             if epoch+1==50:
                 validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
                                         thresholds=thresholds, tokenizer=dataset_val.tokenizer)
