@@ -132,20 +132,16 @@ def main(config):
             if epoch==0:
                 print("resuming from epoch 50... \n")
 
-                validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
+                validate_result_0 = evaluate(model, detector, criterion, data_loader_val, device, config,
                                         thresholds=thresholds, tokenizer=dataset_val.tokenizer)
-                print(f"validate_result: {validate_result}")
-                test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
+                test_result_0 = evaluate(model, detector, criterion, data_loader_test, device, config,
                                     thresholds=thresholds, tokenizer=dataset_test.tokenizer)
-                print(f"test_result: {test_result}")
 
-            if epoch+1==50:
-                validate_result = evaluate(model, detector, criterion, data_loader_val, device, config,
-                                        thresholds=thresholds, tokenizer=dataset_val.tokenizer)
-                print(f"validate_result: {validate_result}")
-                test_result = evaluate(model, detector, criterion, data_loader_test, device, config,
-                                    thresholds=thresholds, tokenizer=dataset_test.tokenizer)
-                print(f"test_result: {test_result}")
+            if epoch==100:
+                print(f"validate_result: {validate_result_0}")
+                print(f"test_result: {test_result_0}")
+
+
     
     if config.mode == "test":
         if os.path.exists(config.test_path):
